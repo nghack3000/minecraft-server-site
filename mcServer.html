@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Minecraft Server</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green: #4ade80;
+      --green-dim: #166534;
+      --red: #f87171;
+      --red-dim: #7f1d1d;
+      --yellow: #facc15;
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --border: #2a2a3a;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --pixel: 'Press Start 2P', monospace;
+      --mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .logo {
+      font-family: var(--pixel);
+      font-size: clamp(14px, 3vw, 22px);
+      color: var(--green);
+      letter-spacing: 2px;
+      line-height: 1.6;
+      text-shadow: 0 0 30px rgba(74,222,128,0.4);
+      margin-bottom: 0.75rem;
+    }
+
+    .logo span { color: var(--yellow); }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* Status card */
+    .status-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--green);
+      transition: background 0.4s;
+    }
+
+    .status-card.offline::before { background: var(--red); }
+    .status-card.starting::before {
+      background: var(--yellow);
+      animation: pulse-bar 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse-bar {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .status-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--pixel);
+      font-size: 11px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s ease-in-out infinite; }
+    .dot.offline { background: var(--red); }
+    .dot.starting { background: var(--yellow); animation: blink 0.7s ease-in-out infinite; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .ip-block {
+      font-family: var(--pixel);
+      font-size: 10px;
+      color: var(--green);
+      background: rgba(74,222,128,0.07);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 4px;
+      padding: 8px 14px;
+      letter-spacing: 1px;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: var(--pixel);
+      font-size: 18px;
+      color: var(--green);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .stat-val.offline-val { color: var(--text-dim); }
+
+    .stat-key {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Players list */
+    .players-section {
+      margin-top: 1rem;
+    }
+
+    .players-title {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .player-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .player-tag {
+      background: rgba(74,222,128,0.08);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 3px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--green);
+    }
+
+    .no-players {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* Buttons */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn {
+      font-family: var(--pixel);
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 1.1rem 1rem;
+      border-radius: 4px;
+      border: 1px solid;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-start {
+      background: rgba(74,222,128,0.1);
+      border-color: rgba(74,222,128,0.4);
+      color: var(--green);
+    }
+
+    .btn-start:hover:not(:disabled) {
+      background: rgba(74,222,128,0.2);
+      border-color: var(--green);
+      box-shadow: 0 0 20px rgba(74,222,128,0.15);
+    }
+
+    .btn-stop {
+      background: rgba(248,113,113,0.08);
+      border-color: rgba(248,113,113,0.3);
+      color: var(--red);
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: rgba(248,113,113,0.18);
+      border-color: var(--red);
+      box-shadow: 0 0 20px rgba(248,113,113,0.12);
+    }
+
+    /* Log terminal */
+    .terminal {
+      background: #050508;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .term-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .term-title {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-left: 4px;
+    }
+
+    #log-output {
+      padding: 1rem 1.25rem;
+      height: 160px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #94a3b8;
+      scroll-behavior: smooth;
+    }
+
+    #log-output .log-line { display: block; }
+    #log-output .log-line.success { color: var(--green); }
+    #log-output .log-line.error { color: var(--red); }
+    #log-output .log-line.warn { color: var(--yellow); }
+    #log-output .log-line.info { color: #7dd3fc; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .footer a { color: var(--green); text-decoration: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-size: 12px;
+      color: var(--text);
+      letter-spacing: 1px;
+      transition: transform 0.3s ease;
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 480px) {
+      .controls { grid-template-columns: 1fr; }
+      .status-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo">⛏ MY <span>MINECRAFT</span><br>SERVER</div>
+    <div class="subtitle">Control Panel</div>
+  </div>
+
+  <!-- Status Card -->
+  <div class="status-card offline" id="status-card">
+    <div class="status-row">
+      <div>
+        <div class="status-label">Server Status</div>
+        <div class="status-dot">
+          <span class="dot offline" id="dot"></span>
+          <span id="status-text">Checking...</span>
+        </div>
+      </div>
+      <div class="ip-block" id="server-ip">YOUR.VPS.IP:25565</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-val offline-val" id="stat-players">—</span>
+        <span class="stat-key">Players</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val offline-val" id="stat-uptime">—</span>
+        <span class="stat-key">Uptime</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val offline-val" id="stat-version">1.21</span>
+        <span class="stat-key">Version</span>
+      </div>
+    </div>
+
+    <div class="players-section">
+      <div class="players-title">Online Players</div>
+      <div class="player-list" id="player-list">
+        <span class="no-players">Server is offline</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="controls">
+    <button class="btn btn-start" id="btn-start" onclick="startServer()">▶ Start Server</button>
+    <button class="btn btn-stop"  id="btn-stop"  onclick="stopServer()" disabled>⏹ Stop Server</button>
+  </div>
+
+  <!-- Terminal log -->
+  <div class="terminal">
+    <div class="terminal-header">
+      <div class="term-dot" style="background:#f87171"></div>
+      <div class="term-dot" style="background:#facc15"></div>
+      <div class="term-dot" style="background:#4ade80"></div>
+      <span class="term-title">Activity Log</span>
+    </div>
+    <div id="log-output">
+      <span class="log-line info">[INFO] Control panel loaded.</span>
+      <span class="log-line">[SYS] Connecting to server API...</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    Powered by your own VPS &mdash; no laptop needed &nbsp;•&nbsp;
+    <a href="#" onclick="checkStatus()">Refresh</a>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────
+  const API = "http://YOUR_VPS_IP:3000";   // <-- change this
+  const SERVER_IP = "YOUR.VPS.IP";          // <-- change this (shown on UI)
+  const MC_VERSION = "1.21";               // <-- change to your version
+  // ─────────────────────────────────────────────────────────
+
+  document.getElementById('server-ip').textContent = SERVER_IP + ':25565';
+  document.getElementById('stat-version').textContent = MC_VERSION;
+
+  let startTime = null;
+  let uptimeInterval = null;
+  let isOnline = false;
+
+  function log(msg, type = '') {
+    const out = document.getElementById('log-output');
+    const ts = new Date().toLocaleTimeString();
+    const line = document.createElement('span');
+    line.className = 'log-line' + (type ? ' ' + type : '');
+    line.textContent = `[${ts}] ${msg}`;
+    out.appendChild(line);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function setStatus(state, players) {
+    const card   = document.getElementById('status-card');
+    const dot    = document.getElementById('dot');
+    const txt    = document.getElementById('status-text');
+    const pStat  = document.getElementById('stat-players');
+    const pList  = document.getElementById('player-list');
+    const btnS   = document.getElementById('btn-start');
+    const btnX   = document.getElementById('btn-stop');
+
+    card.className = 'status-card ' + state;
+    dot.className  = 'dot ' + state;
+
+    if (state === 'online') {
+      txt.textContent = 'ONLINE';
+      pStat.textContent = players.length;
+      pStat.className = 'stat-val';
+      btnS.disabled = true;
+      btnX.disabled = false;
+      isOnline = true;
+
+      if (!startTime) {
+        startTime = Date.now();
+        uptimeInterval = setInterval(updateUptime, 1000);
+        updateUptime();
+      }
+
+      pList.innerHTML = players.length
+        ? players.map(p => `<span class="player-tag">${p}</span>`).join('')
+        : '<span class="no-players">No players online</span>';
+
+    } else if (state === 'starting') {
+      txt.textContent = 'STARTING...';
+      pStat.textContent = '—';
+      pStat.className = 'stat-val offline-val';
+      btnS.disabled = true;
+      btnX.disabled = true;
+      pList.innerHTML = '<span class="no-players">Server is starting...</span>';
+
+    } else {
+      txt.textContent = 'OFFLINE';
+      pStat.textContent = '—';
+      pStat.className = 'stat-val offline-val';
+      btnS.disabled = false;
+      btnX.disabled = true;
+      isOnline = false;
+      startTime = null;
+      clearInterval(uptimeInterval);
+      document.getElementById('stat-uptime').textContent = '—';
+      pList.innerHTML = '<span class="no-players">Server is offline</span>';
+    }
+  }
+
+  function updateUptime() {
+    if (!startTime) return;
+    const secs = Math.floor((Date.now() - startTime) / 1000);
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    const el = document.getElementById('stat-uptime');
+    el.textContent = h > 0
+      ? `${h}h ${m}m`
+      : m > 0 ? `${m}m ${s}s` : `${s}s`;
+    el.className = 'stat-val';
+  }
+
+  async function checkStatus() {
+    try {
+      const res  = await fetch(`${API}/status`, { signal: AbortSignal.timeout(5000) });
+      const data = await res.json();
+      if (data.online) {
+        setStatus('online', data.players || []);
+      } else {
+        setStatus('offline', []);
+      }
+    } catch {
+      setStatus('offline', []);
+      log('Could not reach API. Is the VPS running?', 'error');
+    }
+  }
+
+  async function startServer() {
+    log('Sending start command...', 'warn');
+    setStatus('starting', []);
+    document.getElementById('btn-start').disabled = true;
+    toast('Starting server...');
+    try {
+      const res  = await fetch(`${API}/start`, { method: 'POST', signal: AbortSignal.timeout(8000) });
+      const data = await res.json();
+      if (data.success) {
+        log('Start command sent. Waiting for server...', 'success');
+        setTimeout(checkStatus, 6000);
+        setTimeout(checkStatus, 15000);
+        setTimeout(checkStatus, 30000);
+      } else {
+        log('Start failed: ' + (data.message || 'unknown error'), 'error');
+        toast('Failed to start server');
+        checkStatus();
+      }
+    } catch {
+      log('Could not reach API.', 'error');
+      toast('API unreachable');
+      checkStatus();
+    }
+  }
+
+  async function stopServer() {
+    log('Sending stop command...', 'warn');
+    toast('Stopping server...');
+    document.getElementById('btn-stop').disabled = true;
+    try {
+      const res  = await fetch(`${API}/stop`, { method: 'POST', signal: AbortSignal.timeout(8000) });
+      const data = await res.json();
+      log(data.success ? 'Stop command sent.' : 'Stop failed: ' + data.message, data.success ? 'success' : 'error');
+      setTimeout(checkStatus, 5000);
+    } catch {
+      log('Could not reach API.', 'error');
+      checkStatus();
+    }
+  }
+
+  checkStatus();
+  setInterval(checkStatus, 15000);
+</script>
+</body>
+</html>
